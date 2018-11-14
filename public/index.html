@@ -64,7 +64,7 @@
       <script src="https://www.gstatic.com/firebasejs/5.5.8/firebase.js"></script>
       <script>
         // Initialize Firebase
-        var auth, database, userInfo;
+        var auth, database, userInfo, selectedKey;
 
         var config = {
           apiKey: "AIzaSyBhjXy4xNewkKGKt_TGYuNEOl5zOAIjIOM",
@@ -118,15 +118,36 @@
               $(".collection").append(html);
          }
 
+         function fn_get_data_one(key){
+           selectedKey = key;
+
+           var memoRef = database.ref('memos/' + userInfo.uid +'/' +key).once('value').then(function(snapshot){
+             $(".textarea").val(snapshot.val().txt);
+           });
+           // memoRef.on('child_added', on_child_added);
+         }
          function save_data(){
            var memoRef = database.ref('memos/' + userInfo.uid);
            var txt = $(".textarea").val();
 
-           //push
-           memoRef.push({
-             txt : txt,
-             createDate : new Date().getTime()
-           })
+           if ( txt == ''){
+             return;
+           }
+
+           if (selectedKey) {
+               memoRef = database.ref('memos/' + userInfo.uid + '/' + selectedKey);
+               memoRef.update({
+                  txt : txt,
+                  createDate : new Date().getTime(),
+                  updateDate : new Date().getTime()
+               });
+           }else{
+               //push
+               memoRef.push({
+                 txt : txt,
+                 createDate : new Date().getTime()
+               });
+            }
          }
          $(function(){
            $(".textarea").blur(function(){
